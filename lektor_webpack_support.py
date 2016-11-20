@@ -13,8 +13,8 @@ class WebpackSupportPlugin(Plugin):
         Plugin.__init__(self, *args, **kwargs)
         self.webpack_process = None
 
-    def is_enabled(self, build_flags):
-        return bool(build_flags.get('webpack'))
+    def is_enabled(self, extra_flags):
+        return bool(extra_flags.get('webpack'))
 
     def run_webpack(self, watch=False):
         webpack_root = os.path.join(self.env.root_path, 'webpack')
@@ -41,7 +41,10 @@ class WebpackSupportPlugin(Plugin):
             self.webpack_process.kill()
 
     def on_before_build_all(self, builder, **extra):
-        if not self.is_enabled(builder.build_flags) \
+        extra_flags = getattr(
+            builder, "extra_flags", getattr(builder, "build_flags", None)
+        )
+        if not self.is_enabled(extra_flags) \
            or self.webpack_process is not None:
             return
         self.npm_install()
