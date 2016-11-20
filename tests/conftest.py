@@ -25,8 +25,12 @@ def pad(env):
 
 @pytest.fixture(scope='function')
 def builder(tmpdir, pad):
-    return Builder(pad, str(tmpdir.mkdir("output")),
-                   extra_flags=('webpack',))
+    output_dir = str(tmpdir.mkdir("output"))
+    try:
+        return Builder(pad, output_dir, extra_flags=('webpack',))
+    except TypeError:
+        return Builder(pad, output_dir, build_flags=('webpack',))
+
 
 
 @pytest.fixture
