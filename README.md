@@ -9,11 +9,11 @@ the `-f webpack` flag.
 
 ## Enabling the Plugin
 
-To enable the plugin add this to your project file:
+To enable the plugin add this to your project file, run this command while
+sitting in your Lektor project directory:
 
-```ini
-[packages]
-lektor-webpack-support = 0.1
+```bash
+lektor plugins add lektor-webpack-support
 ```
 
 ## Creating a Webpack Project
