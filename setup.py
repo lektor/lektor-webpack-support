@@ -4,6 +4,7 @@ from setuptools import setup
 tests_require = [
     'lektor',
     'pytest',
+    'pytest-mock',
 ]
 
 setup(
