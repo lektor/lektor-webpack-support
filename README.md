@@ -35,7 +35,7 @@ start is to create an almost empty file:
 Now we can npm install the rest:
 
 ```
-$ npm install --save-dev webpack babel-core node-sass babel-loader sass-loader css-loader url-loader style-loader file-loader
+$ npm install --save-dev webpack babel-core node-sass babel-loader sass-loader css-loader url-loader style-loader file-loader extract-text-webpack-plugin
 ```
 
 This will install webpack itself together with babel and sass as well as
