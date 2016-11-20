@@ -7,7 +7,7 @@ env:
   - LEKTOR=master
 matrix:
   exclude:
-    - python: 3.5
+    - python: "3.5"
       env: LEKTOR=pypi
 
 before_install:
@@ -15,7 +15,7 @@ before_install:
   - source $HOME/.nvm/nvm.sh
   - nvm install stable
   - node --version
-  - if [[ $LEKTOR == master ]]; then travis_retry pip install git+https://github.com/lektor/lektor.git#egg=Lektor
+  - if [[ $LEKTOR == master ]]; then travis_retry pip install git+https://github.com/lektor/lektor.git#egg=Lektor; fi
 
 install:
   - travis_retry pip install --upgrade pytest
