@@ -19,6 +19,10 @@ before_install:
 
 install:
   - travis_retry pip install --upgrade pytest
+  - travis_retry pip install --upgrade codecov
   - travis_retry pip install --editable .[test]
 
-script: pytest
+script: pytest --cov=lektor_webpack_support
+
+after_success:
+  - codecov
