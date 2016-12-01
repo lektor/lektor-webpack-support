@@ -1,6 +1,6 @@
 # lektor-webpack-support
 
-[![Build Status](https://travis-ci.org/lektor/lektor-webpack-support.svg)](https://travis-ci.org/lektor/lektor-webpack-support)
+[![Build Status](https://travis-ci.org/lektor/lektor-webpack-support.svg)](https://travis-ci.org/lektor/lektor-webpack-support) [![Code Coverage](https://codecov.io/gh/lektor/lektor-webpack-support/branch/master/graph/badge.svg)](https://codecov.io/gh/lektor/lektor-webpack-support)
 
 This is a plugin for Lektor that adds support for webpack to projects.  When
 enabled it can build a webpack project from the `webpack/` folder into the
