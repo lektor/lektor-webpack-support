@@ -28,8 +28,9 @@ class WebpackSupportPlugin(Plugin):
         webpack_root = os.path.join(self.env.root_path, 'webpack')
         portable_popen(['npm', 'install'], cwd=webpack_root).wait()
 
-    def on_server_spawn(self, build_flags, **extra):
-        if not self.is_enabled(build_flags):
+    def on_server_spawn(self, **extra):
+        extra_flags = extra.get("extra_flags") or extra.get("build_flags") or {}
+        if not self.is_enabled(extra_flags):
             return
         self.npm_install()
         reporter.report_generic('Spawning webpack watcher')
