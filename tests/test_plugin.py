@@ -23,3 +23,37 @@ def test_basic(plugin, builder, env, mocker):
         [env_path / 'webpack' / 'node_modules' / '.bin' / 'webpack'],
         cwd=env_path / 'webpack'
     )
+
+
+def test_watcher(plugin, env, mocker):
+    mock_popen = mocker.patch("lektor_webpack_support.portable_popen")
+    plugin.on_server_spawn(extra_flags={"webpack": True})
+    env_path = py.path.local(env.root_path)
+    mock_popen.assert_any_call(
+        ["npm", "install"],
+        cwd=env_path / 'webpack'
+    )
+    mock_popen.assert_any_call(
+        [env_path / 'webpack' / 'node_modules' / '.bin' / 'webpack', '--watch'],
+        cwd=env_path / 'webpack'
+    )
+
+
+def test_watcher_build_flags(plugin, env, mocker):
+    mock_popen = mocker.patch("lektor_webpack_support.portable_popen")
+    plugin.on_server_spawn(build_flags={"webpack": True})
+    env_path = py.path.local(env.root_path)
+    mock_popen.assert_any_call(
+        ["npm", "install"],
+        cwd=env_path / 'webpack'
+    )
+    mock_popen.assert_any_call(
+        [env_path / 'webpack' / 'node_modules' / '.bin' / 'webpack', '--watch'],
+        cwd=env_path / 'webpack'
+    )
+
+
+def test_watcher_plugin_disabled(plugin, env, mocker):
+    mock_popen = mocker.patch("lektor_webpack_support.portable_popen")
+    plugin.on_server_spawn()
+    mock_popen.assert_not_called()
