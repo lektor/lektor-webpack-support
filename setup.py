@@ -13,7 +13,7 @@ setup(
     author='Armin Ronacher',
     author_email='armin.ronacher@active-4.com',
     url='http://github.com/lektor/lektor-webpack-support',
-    version='0.2',
+    version='0.3',
     license='BSD',
     description='Adds support for webpack to Lektor',
     py_modules=['lektor_webpack_support'],
