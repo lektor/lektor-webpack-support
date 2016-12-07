@@ -1,4 +1,6 @@
 import py
+import threading
+import time
 
 
 def test_disabled_by_default(plugin):
@@ -66,3 +68,19 @@ def test_server_stop(plugin, mocker):
     plugin.webpack_process = mocker.Mock()
     plugin.on_server_stop()
     plugin.webpack_process.kill.assert_called_with()
+
+
+def test_single_npm_process(plugin, mocker):
+    def pause(*args, **kwargs):
+        time.sleep(.1)
+        return mocker.DEFAULT
+
+    mock_popen = mocker.patch("lektor_webpack_support.portable_popen")
+    mock_popen.side_effect = pause
+    thread1 = threading.Thread(target=plugin.npm_install)
+    thread2 = threading.Thread(target=plugin.npm_install)
+    thread1.start()
+    thread2.start()
+    thread1.join()
+    thread2.join()
+    assert mock_popen.call_count == 1

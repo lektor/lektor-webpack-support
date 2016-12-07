@@ -1,4 +1,5 @@
 import os
+import threading
 
 from lektor.pluginsystem import Plugin
 from lektor.reporter import reporter
@@ -11,6 +12,7 @@ class WebpackSupportPlugin(Plugin):
 
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
+        self.npm_lock = threading.Lock()
         self.webpack_process = None
 
     def is_enabled(self, extra_flags):
@@ -24,9 +26,13 @@ class WebpackSupportPlugin(Plugin):
         return portable_popen(args, cwd=webpack_root)
 
     def npm_install(self):
-        reporter.report_generic('Running npm install')
-        webpack_root = os.path.join(self.env.root_path, 'webpack')
-        portable_popen(['npm', 'install'], cwd=webpack_root).wait()
+        if self.npm_lock.acquire(False):
+            reporter.report_generic('Running npm install')
+            webpack_root = os.path.join(self.env.root_path, 'webpack')
+            portable_popen(['npm', 'install'], cwd=webpack_root).wait()
+        else:
+            self.npm_lock.acquire()
+        self.npm_lock.release()
 
     def on_server_spawn(self, **extra):
         extra_flags = extra.get("extra_flags") or extra.get("build_flags") or {}
