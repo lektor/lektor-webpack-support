@@ -18,13 +18,14 @@ lektor plugins add lektor-webpack-support
 
 ## Creating a Webpack Project
 
-Next you need to create a webpack project in the `webpack/` folder.  You
-will need a `package.json` as well as a `webpack.config.js`
+Next you need to create a webpack project. Create a `webpack/` folder and
+inside that folder create `package.json` and a `webpack.config.js`
 
 ### `webpack/package.json`
 
 This file instructs `npm` which packages we will need.  All we need for a
-start is to create an almost empty file (name and version fields are mandatory but not important for functionality, change them to suit your own needs):
+start is to create an almost empty file (name and version fields are mandatory
+but not important for functionality, change them to suit your own needs):
 
 ```json
 {
@@ -37,8 +38,8 @@ start is to create an almost empty file (name and version fields are mandatory b
 Now we can npm install the rest:
 
 ```
-$ cd </path/to/your/lektor/project>  # if you are not in there already
-$ npm install --prefix ./webpack --save-dev webpack babel-core node-sass babel-loader sass-loader css-loader url-loader style-loader file-loader extract-text-webpack-plugin
+$ cd </path/to/your/lektor/project>/webpack
+$ npm install --save-dev webpack babel-core node-sass babel-loader sass-loader css-loader url-loader style-loader file-loader extract-text-webpack-plugin
 ```
 
 This will install webpack itself together with babel and sass as well as
