@@ -35,11 +35,23 @@ but not important for functionality, change them to suit your own needs):
 }
 ```
 
-Now we can npm install the rest:
+Now we can npm install the rest.
+
+*NOTE: web pack 2 is already out but still has some problems so we pin some dependencies to older versions*
 
 ```
 $ cd </path/to/your/lektor/project>/webpack
-$ npm install --save-dev webpack babel-core node-sass babel-loader sass-loader css-loader url-loader style-loader file-loader extract-text-webpack-plugin
+$ npm install --save-dev \
+    webpack@1.14.0 \
+    extract-text-webpack-plugin@1.0.1 \
+    babel-loader \
+    css-loader \
+    file-loader \
+    node-sass \
+    sass-loader \
+    style-loader \
+    url-loader \
+    webpack babel-core \
 ```
 
 This will install webpack itself together with babel and sass as well as
