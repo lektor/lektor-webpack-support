@@ -35,7 +35,7 @@ but not important for functionality, change them to suit your own needs):
 }
 ```
 
-Now we can npm install the rest:
+Now we can `npm install` (or `yarn add`) the rest:
 
 ```
 $ cd </path/to/your/lektor/project>/webpack
