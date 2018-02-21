@@ -1,0 +1,5 @@
+[project]
+name = parcel-example
+
+[packages]
+lektor-webpack-support = 0.3

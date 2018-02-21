@@ -16,37 +16,52 @@ class WebpackSupportPlugin(Plugin):
     def is_enabled(self, extra_flags):
         return bool(extra_flags.get('webpack'))
 
-    def run_webpack(self, watch=False):
-        webpack_root = os.path.join(self.env.root_path, 'webpack')
-        args = [os.path.join(webpack_root, 'node_modules', '.bin', 'webpack')]
-        if watch:
-            args.append('--watch')
-        return portable_popen(args, cwd=webpack_root)
+    def get_webpack_folder(self, *paths):
+        return os.path.join(self.env.root_path, self.get_config().get("folder", "webpack"), *paths)
 
-    def install_node_dependencies(self):
-        webpack_root = os.path.join(self.env.root_path, 'webpack')
+    def run_webpack(self, *extra_args):
+        args = [self.get_webpack_folder('node_modules', '.bin', 'webpack')] + list(extra_args)
+        return portable_popen(args, cwd=self.get_webpack_folder())
 
+    def get_name(self):
+        return self.get_config().get("name", "webpack")
+
+    def run_package_manager(self, *args):
         # Use yarn over npm if it's availabe and there is a yarn lockfile
-        has_yarn_lockfile = os.path.exists(os.path.join(
-            webpack_root, 'yarn.lock'))
+        has_yarn_lockfile = os.path.exists(self.get_webpack_folder('yarn.lock'))
         pkg_manager = 'npm'
         if locate_executable('yarn') is not None and has_yarn_lockfile:
             pkg_manager = 'yarn'
+        reporter.report_generic('Running {} {}'.format(pkg_manager, " ".join(args)))
+        return portable_popen([pkg_manager] + list(args), cwd=self.get_webpack_folder())
 
-        reporter.report_generic('Running {} install'.format(pkg_manager))
-        portable_popen([pkg_manager, 'install'], cwd=webpack_root).wait()
+    def install_node_dependencies(self):
+        self.run_package_manager('install').wait()
+
+    def run_build(self):
+        build_script = self.get_config().get("build_script")
+        if build_script:
+            self.run_package_manager('run', build_script).wait()
+            return
+        self.run_webpack().wait()
+
+    def spawn_watch(self):
+        watch_script = self.get_config().get('watch_script')
+        if watch_script:
+            return self.run_package_manager('run', watch_script)
+        return self.run_webpack('--watch')
 
     def on_server_spawn(self, **extra):
         extra_flags = extra.get("extra_flags") or extra.get("build_flags") or {}
         if not self.is_enabled(extra_flags):
             return
         self.install_node_dependencies()
-        reporter.report_generic('Spawning webpack watcher')
-        self.webpack_process = self.run_webpack(watch=True)
+        reporter.report_generic('Spawning {} watcher'.format(self.get_name()))
+        self.webpack_process = self.spawn_watch()
 
     def on_server_stop(self, **extra):
         if self.webpack_process is not None:
-            reporter.report_generic('Stopping webpack watcher')
+            reporter.report_generic('Stopping {} watcher'.format(self.get_name()))
             self.webpack_process.kill()
 
     def on_before_build_all(self, builder, **extra):
@@ -57,6 +72,6 @@ class WebpackSupportPlugin(Plugin):
            or self.webpack_process is not None:
             return
         self.install_node_dependencies()
-        reporter.report_generic('Starting webpack build')
-        self.run_webpack().wait()
-        reporter.report_generic('Webpack build finished')
+        reporter.report_generic('Starting {} build'.format(self.get_name()))
+        self.run_build()
+        reporter.report_generic('{} build finished'.format(self.get_name()))
