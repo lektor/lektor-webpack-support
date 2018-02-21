@@ -11,47 +11,47 @@ def test_enabled_with_webpack_flag(plugin):
     assert plugin.is_enabled(extra_flags)
 
 
-def test_basic(plugin, builder, env, mocker):
+def test_basic(expected, plugin, builder, env, mocker):
     mock_popen = mocker.patch("lektor_webpack_support.portable_popen")
     plugin.on_before_build_all(builder)
     env_path = py.path.local(env.root_path)
     mock_popen.assert_any_call(
         ["npm", "install"],
-        cwd=env_path / 'webpack'
+        cwd=env_path / expected.root_path
     )
     mock_popen.assert_any_call(
-        [env_path / 'webpack' / 'node_modules' / '.bin' / 'webpack'],
-        cwd=env_path / 'webpack'
+        expected.build_command,
+        cwd=env_path / expected.root_path
     )
     assert plugin.webpack_process is None
 
 
-def test_watcher(plugin, env, mocker):
+def test_watcher(expected, plugin, env, mocker):
     mock_popen = mocker.patch("lektor_webpack_support.portable_popen")
     plugin.on_server_spawn(extra_flags={"webpack": True})
     env_path = py.path.local(env.root_path)
     mock_popen.assert_any_call(
         ["npm", "install"],
-        cwd=env_path / 'webpack'
+        cwd=env_path / expected.root_path
     )
     mock_popen.assert_any_call(
-        [env_path / 'webpack' / 'node_modules' / '.bin' / 'webpack', '--watch'],
-        cwd=env_path / 'webpack'
+        expected.watch_command,
+        cwd=env_path / expected.root_path
     )
     assert plugin.webpack_process is mock_popen.return_value
 
 
-def test_watcher_build_flags(plugin, env, mocker):
+def test_watcher_build_flags(expected, plugin, env, mocker):
     mock_popen = mocker.patch("lektor_webpack_support.portable_popen")
     plugin.on_server_spawn(build_flags={"webpack": True})
     env_path = py.path.local(env.root_path)
     mock_popen.assert_any_call(
         ["npm", "install"],
-        cwd=env_path / 'webpack'
+        cwd=env_path / expected.root_path
     )
     mock_popen.assert_any_call(
-        [env_path / 'webpack' / 'node_modules' / '.bin' / 'webpack', '--watch'],
-        cwd=env_path / 'webpack'
+        expected.watch_command,
+        cwd=env_path / expected.root_path
     )
     assert plugin.webpack_process is mock_popen.return_value
 
@@ -68,7 +68,7 @@ def test_server_stop(plugin, mocker):
     plugin.webpack_process.kill.assert_called_with()
 
 
-def test_yarn_support(plugin, env, mocker):
+def test_yarn_support(expected, plugin, env, mocker):
     mock_popen = mocker.patch('lektor_webpack_support.portable_popen')
 
     mock_path_exists = mocker.patch('os.path.exists')
@@ -86,5 +86,5 @@ def test_yarn_support(plugin, env, mocker):
     mock_locate_executable.assert_any_call('yarn')
     mock_popen.assert_any_call(
         ['yarn', 'install'],
-        cwd=env_path / 'webpack'
+        cwd=env_path / expected.root_path
     )
