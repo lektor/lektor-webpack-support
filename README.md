@@ -5,7 +5,9 @@
 This is a plugin for Lektor that adds support for webpack to projects.  When
 enabled it can build a webpack project from the `webpack/` folder into the
 asset folder automatically when the server (or build process) is run with
-the `-f webpack` flag.
+the `-f webpack` flag. 
+In addition. it can be configured to run arbitrary `npm` scripts to support
+arbitrary build tools, such as [Parcel](https://parceljs.org).
 
 ## Enabling the Plugin
 
@@ -16,9 +18,9 @@ sitting in your Lektor project directory:
 lektor plugins add lektor-webpack-support
 ```
 
-## Creating a Webpack Project
+## Example 1: Creating a Webpack Project
 
-Next you need to create a webpack project. Create a `webpack/` folder and
+First create a webpack project. Create a `webpack/` folder and
 inside that folder create `package.json` and a `webpack.config.js`
 
 ### `webpack/package.json`
@@ -56,64 +58,155 @@ idea is to build the files from `webpack/scss` and `webpack/js` into
 installed for as long as someone else ran it before.
 
 ```javascript
-var webpack = require('webpack');
-var path = require('path');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
+const webpack = require('webpack');
+const path = require('path');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
+const extractPlugin = new ExtractTextPlugin({ filename: 'styles.css' });
 
-var options = {
+const config = {
+
+  context: path.resolve(__dirname),
+
   entry: {
-    'app': './js/main.js',
-    'styles': './scss/main.scss'
+    app: './js/main.js',
+    styles: './scss/main.scss'
   },
+
   output: {
     path: path.dirname(__dirname) + '/assets/static/gen',
     filename: '[name].js'
   },
-  devtool: '#cheap-module-source-map',
-  resolve: {
-    modulesDirectories: ['node_modules'],
-    extensions: ['', '.js']
-  },
+
   module: {
-    loaders: [
+    rules: [
+
+      //babel-loader
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        loader: 'babel-loader'
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: ['env']
+          }
+        }
       },
+
+      //sass-loader
       {
         test: /\.scss$/,
-        loader: ExtractTextPlugin.extract('style-loader', 'css-loader!sass-loader')
-      },
-      {
-        test: /\.css$/,
-        loader: ExtractTextPlugin.extract('style-loader', 'css-loader')
-      },
-      {
-        test: /\.woff2?$|\.ttf$|\.eot$|\.svg$|\.png|\.jpe?g\|\.gif$/,
-        loader: 'file'
+        use: extractPlugin.extract({
+          use: [
+            {
+              loader: 'css-loader',
+              options: {
+                sourceMap: true
+              }
+            },
+            {
+              loader: 'sass-loader',
+              options: {
+                sourceMap: true
+              }
+            }
+          ],
+          fallback: 'style-loader'
+        })
       }
+
     ]
   },
-  plugins: [
-    new ExtractTextPlugin('styles.css', {
-      allChunks: true
-    }),
-    new webpack.optimize.UglifyJsPlugin(),
-    new webpack.optimize.DedupePlugin()
-  ]
-};
 
-module.exports = options;
+  plugins: [
+    extractPlugin
+  ],
+
+  devtool: 'inline-source-map'
+}
+
+module.exports = config;
 ```
 
-## Creating the App
+### Creating the App
 
 Now we can start building our app.  We configured at least two files
 in webpack: `js/main.js` and `scss/main.scss`.  Those are the entry
 points we need to have.  You can create them as empty files in
 `webpack/js/main.js` and `webpack/scss/main.scss`.
+
+## Example 2: Creating a [Parcel](https://parceljs.org/) Project
+
+To create a Parcel project, create a `parcel/` folder and inside that folder create the following files:
+
+### `configs/webpack-support.ini`
+
+This file instructs the plugin how to generate the assets. 
+
+* `name` will be used in the output instead of 'webpack',
+* `folder` should point to the project subforlder containing the parcel project, 
+* `watch_script` is the npm script used in `lektor server -f webpack`,
+* `build_script` is the npm script used in `lektor build -f webpack`.
+
+```ini
+name = Parcel
+folder = parcel
+watch_script = watch
+build_script = build
+```
+
+### `parcel/package.json`
+
+Similar to the webpack example above we need a `package.json` file. But in addition, we need to provide the npm scripts to use for `lektor build -f webpack` and `lektor watch -f webpack`.
+
+```json
+{
+  "name": "lektor-webpack",
+  "version": "1.0.0",
+  "scripts": {
+    "watch": "NODE_ENV=development parcel --out-dir=../assets/static/gen --out-file=main.js --public-url=./assets/ js/main.js",
+    "build": "NODE_ENV=production parcel build --out-dir=../assets/static/gen --out-file=main.js --public-url=./assets/ js/main.js"
+  },
+  "private": true
+}
+```
+
+Now we can `npm install` (or `yarn add`) the rest:
+
+```
+$ cd </path/to/your/lektor/project>/parcel
+$ npm install --save-dev parcel-bundler babel-preset-env node-sass
+```
+
+This will install Parcel, babel and sass. 
+
+### `parcel/babelr.rc`
+
+Next up is a simple Babel config file, using the recommened env preset.
+
+```json
+{
+  "presets": ["env"]
+}
+```
+
+### `parcel/main.scss`
+
+A simple SCSS file.
+
+```scss
+body {
+  border: 10px solid red;
+}
+```
+
+### `parcel/main.js`
+
+A simple Javascript file that imports the SCSS file so that Parcel will know to include it as well.
+
+```javascript
+import './main.scss';
+```
 
 ## Running the Server
 
