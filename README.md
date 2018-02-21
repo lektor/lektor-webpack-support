@@ -56,56 +56,74 @@ idea is to build the files from `webpack/scss` and `webpack/js` into
 installed for as long as someone else ran it before.
 
 ```javascript
-var webpack = require('webpack');
-var path = require('path');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
+const webpack = require('webpack');
+const path = require('path');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
+const extractPlugin = new ExtractTextPlugin({ filename: 'styles.css' });
 
-var options = {
+const config = {
+
+  context: path.resolve(__dirname),
+
   entry: {
-    'app': './js/main.js',
-    'styles': './scss/main.scss'
+    app: './js/main.js',
+    styles: './scss/main.scss'
   },
+
   output: {
     path: path.dirname(__dirname) + '/assets/static/gen',
     filename: '[name].js'
   },
-  devtool: '#cheap-module-source-map',
-  resolve: {
-    modulesDirectories: ['node_modules'],
-    extensions: ['', '.js']
-  },
+
   module: {
-    loaders: [
+    rules: [
+
+      //babel-loader
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        loader: 'babel-loader'
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: ['env']
+          }
+        }
       },
+
+      //sass-loader
       {
         test: /\.scss$/,
-        loader: ExtractTextPlugin.extract('style-loader', 'css-loader!sass-loader')
+        use: extractPlugin.extract({
+          use: [
+      {
+              loader: 'css-loader',
+              options: {
+                sourceMap: true
+              }
       },
       {
-        test: /\.css$/,
-        loader: ExtractTextPlugin.extract('style-loader', 'css-loader')
-      },
-      {
-        test: /\.woff2?$|\.ttf$|\.eot$|\.svg$|\.png|\.jpe?g\|\.gif$/,
-        loader: 'file'
+              loader: 'sass-loader',
+              options: {
+                sourceMap: true
       }
+            }
+          ],
+          fallback: 'style-loader'
+        })
+      }
+
     ]
   },
-  plugins: [
-    new ExtractTextPlugin('styles.css', {
-      allChunks: true
-    }),
-    new webpack.optimize.UglifyJsPlugin(),
-    new webpack.optimize.DedupePlugin()
-  ]
-};
 
-module.exports = options;
+  plugins: [
+    extractPlugin
+  ],
+
+  devtool: 'inline-source-map'
+}
+
+module.exports = config;
 ```
 
 ## Creating the App
