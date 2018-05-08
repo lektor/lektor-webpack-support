@@ -7,7 +7,7 @@ from lektor.utils import locate_executable, portable_popen
 
 class WebpackSupportPlugin(Plugin):
     name = 'Webpack Support Plugin'
-    description = 'Super simple plugin that runs a webpack watcher'
+    description = 'Super simple Lektor plugin that runs a webpack watcher'
 
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
