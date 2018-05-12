@@ -32,7 +32,7 @@ setup(
     py_modules=['lektor_webpack_support'],
     tests_require=tests_require,
     url='http://github.com/lektor/lektor-webpack-support',
-    version='0.4.1',
+    version='0.5',
     name='lektor-webpack-support',
     classifiers=[
         'Environment :: Plugins',
