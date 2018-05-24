@@ -16,12 +16,30 @@ class WebpackSupportPlugin(Plugin):
     def is_enabled(self, extra_flags):
         return bool(extra_flags.get('webpack'))
 
-    def run_webpack(self, watch=False):
+    def is_debug(self, build_flags):
+        return bool(build_flags.get('debug'))
+
+    def is_production(self, build_flags):
+        return bool(build_flags.get('production'))
+
+    def get_mode(self, build_flags):
+        if self.is_debug(build_flags):
+            return 'd'
+        elif self.is_production(build_flags):
+            return 'p'
+
+    def run_webpack(self, watch=False, mode=None):
         webpack_root = os.path.join(self.env.root_path, 'webpack')
         args = [os.path.join(webpack_root, 'node_modules', '.bin', 'webpack')]
+        env = os.environ.copy()
         if watch:
             args.append('--watch')
-        return portable_popen(args, cwd=webpack_root)
+        if mode is 'd':
+            args.append('-d')
+        elif mode is 'p':
+            args.append('-p')
+            env['NODE_ENV'] = 'production'
+        return portable_popen(args, cwd=webpack_root, env=env)
 
     def install_node_dependencies(self):
         webpack_root = os.path.join(self.env.root_path, 'webpack')
@@ -42,7 +60,7 @@ class WebpackSupportPlugin(Plugin):
             return
         self.install_node_dependencies()
         reporter.report_generic('Spawning webpack watcher')
-        self.webpack_process = self.run_webpack(watch=True)
+        self.webpack_process = self.run_webpack(watch=True, mode=self.get_mode(build_flags))
 
     def on_server_stop(self, **extra):
         if self.webpack_process is not None:
@@ -58,5 +76,5 @@ class WebpackSupportPlugin(Plugin):
             return
         self.install_node_dependencies()
         reporter.report_generic('Starting webpack build')
-        self.run_webpack().wait()
+        self.run_webpack(mode=self.get_mode(builder.build_flags)).wait()
         reporter.report_generic('Webpack build finished')
