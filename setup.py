@@ -14,10 +14,10 @@ with open('lektor_webpack_support.py', 'rb') as f:
         f.read().decode('utf-8')).group(1)))
 
 tests_require = [
-    'lektor',
-    'pytest',
-    'pytest-cov',
-    'pytest-mock',
+    "lektor",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
 ]
 
 setup(
