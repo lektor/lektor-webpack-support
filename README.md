@@ -39,7 +39,7 @@ Now we can `npm install` (or `yarn add`) the rest:
 
 ```
 $ cd </path/to/your/lektor/project>/webpack
-$ npm install --save-dev webpack babel-core node-sass babel-loader sass-loader css-loader url-loader style-loader file-loader extract-text-webpack-plugin
+$ npm install --save-dev webpack-cli @babel/core sass babel-loader sass-loader css-loader url-loader file-loader mini-css-extract-plugin
 ```
 
 This will install webpack itself together with babel and sass as well as
@@ -56,9 +56,8 @@ idea is to build the files from `webpack/scss` and `webpack/js` into
 installed for as long as someone else ran it before.
 
 ```javascript
-var webpack = require('webpack');
 var path = require('path');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
+var MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 
 var options = {
@@ -70,38 +69,35 @@ var options = {
     path: path.dirname(__dirname) + '/assets/static/gen',
     filename: '[name].js'
   },
-  devtool: '#cheap-module-source-map',
+  devtool: 'cheap-module-source-map',
+  mode: 'production',
   resolve: {
-    modulesDirectories: ['node_modules'],
+    modules: ['node_modules'],
     extensions: ['', '.js']
   },
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        loader: 'babel-loader'
+        use: ['babel-loader'],
       },
       {
         test: /\.scss$/,
-        loader: ExtractTextPlugin.extract('style-loader', 'css-loader!sass-loader')
+        use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader']
       },
       {
         test: /\.css$/,
-        loader: ExtractTextPlugin.extract('style-loader', 'css-loader')
+        use: [MiniCssExtractPlugin.loader, 'css-loader']
       },
       {
         test: /\.woff2?$|\.ttf$|\.eot$|\.svg$|\.png|\.jpe?g\|\.gif$/,
-        loader: 'file'
+        use: ['file']
       }
     ]
   },
   plugins: [
-    new ExtractTextPlugin('styles.css', {
-      allChunks: true
-    }),
-    new webpack.optimize.UglifyJsPlugin(),
-    new webpack.optimize.DedupePlugin()
+    new ExtractTextPlugin({filename: 'styles.css'}
   ]
 };
 
