@@ -97,7 +97,7 @@ var options = {
     ]
   },
   plugins: [
-    new ExtractTextPlugin({filename: 'styles.css'}
+    new ExtractTextPlugin({filename: 'styles.css'})
   ]
 };
 
