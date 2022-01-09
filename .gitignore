@@ -1,8 +1,10 @@
-dist
-build
-.cache
-.coverage
-htmlcov
 *.egg-info
 *.pyc
 *.pyo
+.DS_Store
+.cache
+.coverage
+.eggs
+.tox
+build
+dist
